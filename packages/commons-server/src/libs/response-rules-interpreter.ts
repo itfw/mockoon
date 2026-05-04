@@ -1,17 +1,18 @@
 import {
   Environment,
+  ParsedBodyMimeTypes,
   ProcessedDatabucket,
   ResponseMode,
   ResponseRule,
   ResponseRuleTargets,
   Route,
-  RouteResponse
+  RouteResponse,
+  stringIncludesArrayItems
 } from '@mockoon/commons';
 import { Request } from 'express';
 import { ParsedQs } from 'qs';
-import { ParsedBodyMimeTypes } from '../constants/common.constants';
 import { TemplateParser } from './template-parser';
-import { getValueFromPath, stringIncludesArrayItems } from './utils';
+import { getValueFromPath } from './utils';
 
 /**
  * Interpretor for the route response rules.
@@ -126,13 +127,11 @@ export class ResponseRulesInterpreter {
 
     if (rule.target === 'request_number') {
       value = requestNumber;
-    }
-
-    if (rule.target === 'cookie') {
+    } else if (rule.target === 'cookie') {
       if (!rule.modifier) {
         return false;
       }
-      value = this.request.cookies && this.request.cookies[rule.modifier];
+      value = this.request.cookies?.[rule.modifier];
     } else if (rule.target === 'header') {
       value = this.request.header(rule.modifier);
     } else {
@@ -142,7 +141,7 @@ export class ResponseRulesInterpreter {
           rule.modifier,
           undefined
         );
-      } else if (!rule.modifier && rule.target === 'body') {
+      } else if (rule.target === 'body') {
         value = this.targets.bodyRaw;
       }
     }
@@ -205,12 +204,19 @@ export class ResponseRulesInterpreter {
       }
     }
 
+    const dataBucketTargets = {};
+    this.processedDatabuckets.forEach((bucket) => {
+      dataBucketTargets[bucket.id] = bucket.value;
+      dataBucketTargets[bucket.name] = bucket.value;
+    });
+
     this.targets = {
       body,
       query: this.request.query,
       params: this.request.params,
       bodyRaw: this.request.stringBody,
-      global_var: this.globalVariables
+      global_var: this.globalVariables,
+      data_bucket: dataBucketTargets
     };
   }
 

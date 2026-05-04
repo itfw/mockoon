@@ -1,7 +1,7 @@
 {
   "name": "@mockoon/commons",
   "description": "Mockoon's commons library. Used in Mockoon desktop application and CLI.",
-  "version": "7.0.0",
+  "version": "8.3.0",
   "author": {
     "name": "Guillaume Monnet",
     "email": "guillaume@1kb.software",
@@ -22,24 +22,27 @@
   "publishConfig": {
     "access": "public"
   },
-  "repository": "https://github.com/mockoon/mockoon",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mockoon/mockoon.git"
+  },
   "homepage": "https://mockoon.com",
   "bugs": {
     "url": "https://github.com/mockoon/mockoon/issues"
   },
   "funding": "https://mockoon.com/sponsor-us/",
   "dependencies": {
-    "joi": "17.12.2"
+    "joi": "17.13.0"
   },
   "devDependencies": {
     "@types/mocha": "10.0.6",
-    "@types/node": "20.11.21",
-    "@typescript-eslint/eslint-plugin": "7.1.0",
-    "@typescript-eslint/parser": "7.1.0",
+    "@types/node": "20.12.7",
+    "@typescript-eslint/eslint-plugin": "7.7.1",
+    "@typescript-eslint/parser": "7.7.1",
     "eslint": "8.57.0",
-    "eslint-plugin-jsdoc": "48.2.0",
-    "mocha": "10.3.0",
+    "eslint-plugin-jsdoc": "48.2.3",
+    "mocha": "10.4.0",
     "ts-mocha": "10.0.0",
-    "typescript": "5.3.3"
+    "typescript": "5.4.5"
   }
 }

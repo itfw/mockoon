@@ -16,7 +16,7 @@
 
 Mockoon is the easiest and quickest way to run mock APIs locally. No remote deployment, no account required, free and open-source.
 
-It's a desktop application and a [CLI](https://mockoon.com/cli/) that help you work faster with APIs by mocking them. Integrate third-party APIs quicker, improve your integration tests, speed up your development, etc.
+It's a desktop application and a [CLI](https://mockoon.com/cli/) that helps you work faster with APIs by mocking them. Integrate third-party APIs quicker, improve your integration tests, speed up your development, etc.
 
 ➡️ [Download](https://mockoon.com/download/)
 
@@ -28,13 +28,13 @@ It's a desktop application and a [CLI](https://mockoon.com/cli/) that help you w
 
 Mockoon offers many features:
 
-- unlimited number of mock local servers and routes
+- Unlimited number of mock local servers and routes
 - CLI to run your mock in headless environments, CI, etc.
-- complete control on routes definition: HTTP methods and statuses, regex paths, file serving, custom headers, etc.
+- Complete control on routes definition: HTTP methods and statuses, regex paths, file serving, custom headers, etc.
 - OpenAPI compatibility
 - Record/logs of all entering and forwarded requests
 - JSON templating
-- proxy forwarding mode
+- Proxy forwarding mode
 - HTTPS support
 
 You can check the [complete list](https://mockoon.com/features/) on the website.
@@ -59,13 +59,6 @@ You can check the [complete list](https://mockoon.com/features/) on the website.
       <source media="(prefers-color-scheme: light)" srcset="https://mockoon.com/images/sponsors/localazy.png">
       <img src="https://mockoon.com/images/sponsors/light/localazy.png" alt="Localazy logo" />
       </picture>
-  </a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://www.peakcrypto.com/">
-      <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://mockoon.com/images/sponsors/light/peakcrypto.png">
-      <source media="(prefers-color-scheme: light)" srcset="https://mockoon.com/images/sponsors/peakcrypto.png">
-      <img src="https://mockoon.com/images/sponsors/light/peakcrypto.png" alt="Peakcrypto logo" />
-      </picture>
   </a>
 </div>
 
@@ -73,7 +66,7 @@ You can check the [complete list](https://mockoon.com/features/) on the website.
 
 <div align="center" style="margin-top:20px;margin-bottom:20px;">  
   <a href="https://www.emqx.io/">  
-      <img src="https://mockoon.com/images/sponsors/emqx.png" alt="Peakcrypto logo" />
+      <img src="https://mockoon.com/images/sponsors/emqx.png" alt="emqx logo" />
   </a>
 </div>
 
@@ -118,8 +111,10 @@ Please check our [dedicated documentation](https://github.com/mockoon/mockoon/bl
 
 With advanced features for solo developers and teams, Mockoon Pro supercharges your API development:
 
+- ☁️ [cloud deployments](https://mockoon.com/docs/latest/mockoon-cloud/api-mock-cloud-deployments/)
+- 🔄️ [data synchronization and real-time collaboration](https://mockoon.com/docs/latest/mockoon-cloud/data-synchronization-team-collaboration/)
 - 🤖 [AI powered API mocking](https://mockoon.com/ai-powered-api-mocking/)
-- 📃 Access to dozens of [ready to use JSON templates](https://mockoon.com/templates/).
+- 📃 Access to dozens of [ready-to-use JSON templates](https://mockoon.com/templates/).
 - 💬 Priority support and training.
 
 Upgrade today and take your API development to the next level.
@@ -130,7 +125,7 @@ Upgrade today and take your API development to the next level.
 
 ## Mockoon's documentation
 
-You will find Mockoon's [documentation](https://mockoon.com/docs/latest) on the official website. It covers Mockoon's most complex features. Feel free to contribute or ask for new topics to be covered.
+You will find Mockoon's [documentation](https://mockoon.com/docs/latest/about/) on the official website. It covers Mockoon's most complex features. Feel free to contribute or ask for new topics to be covered.
 
 ## Changelogs
 
@@ -138,7 +133,7 @@ You will find Mockoon applications [changelogs](https://mockoon.com/releases/) o
 
 ## Support/feedback
 
-You can discuss all things related to Mockoon, and ask for help, on the [official community](https://github.com/mockoon/mockoon/discussions). It's also a good place to discuss bugs and feature requests before opening an issue on this repository. For more chat-like discussions, you can also join our [Discord server](https://discord.gg/FtJjkejKGp).
+You can discuss all things related to Mockoon and ask for help on the [official community](https://github.com/mockoon/mockoon/discussions). It's also a good place to discuss bugs and feature requests before opening an issue on this repository. For more chat-like discussions, you can also join our [Discord server](https://discord.gg/FtJjkejKGp).
 
 ## Contributing
 

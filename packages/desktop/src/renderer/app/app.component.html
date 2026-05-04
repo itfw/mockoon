@@ -1,7 +1,3 @@
-<app-context-menu
-  (itemClicked)="contextMenuItemClicked($event)"
-></app-context-menu>
-
 <div class="toasts-container">
   <ngb-toast
     *ngFor="let toast of toasts$ | async"
@@ -22,7 +18,7 @@
     <app-environments-menu class="h-100"></app-environments-menu>
 
     <!-- Right "column" = header + routes menu + main-content -->
-    <div class="d-flex flex-column flex-fill h-100">
+    <div class="d-flex flex-column flex-fill h-100 position-relative">
       <!-- Header: env name +start / env port + prefix -->
       <app-header></app-header>
 
@@ -71,6 +67,8 @@
           ></app-environment-settings>
         </ng-container>
       </div>
+
+      <!-- <app-cloud-warning></app-cloud-warning> -->
     </div>
   </div>
 

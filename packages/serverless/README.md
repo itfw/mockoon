@@ -142,13 +142,16 @@ After deploying to Netlify, any request starting with `/api/*` (e.g. `https://AP
 
 The `MockoonServerless` class accepts an optional `options` object as a second parameter. The following options are available:
 
-| Option name           | Type       | Default value | Description                                                                                                                  |
-| --------------------- | ---------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `logTransaction`      | `boolean`  | `false`       | [Enable full transaction logging](#transaction-logging) (see below).                                                         |
-| `disabledRoutes`      | `string[]` | `[]`          | Disable route(s) by UUID(s) or keyword(s) in route path (see [below](#fakerjs-options)).                                     |
-| `fakerOptions.locale` | `string`   | `[]`          | Faker locale (e.g. 'en', 'en_GB', etc. For supported locales, see below.)                                                    |
-| `fakerOptions.seed`   | `number`   | `[]`          | Number for the Faker.js seed (e.g. 1234)                                                                                     |
-| `envVarsPrefix`       | `string`   | `MOCKOON_`    | [Environment variables prefix](https://mockoon.com/docs/latest/variables/environment-variables/). Leave empty to disable it. |
+| Option name           | Type       | Default value | Description                                                                                                                                                            |
+| --------------------- | ---------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `logTransaction`      | `boolean`  | `false`       | [Enable full transaction logging](#transaction-logging) (see below).                                                                                                   |
+| `disabledRoutes`      | `string[]` | `[]`          | Disable route(s) by UUID or keyword present in the route's path (do not include a leading slash) or keyword present in a folder name (see [below](#disabling-routes)). |
+| `fakerOptions.locale` | `string`   | `[]`          | Faker locale (e.g. 'en', 'en_GB', etc. For supported locales, see [below](#fakerjs-options).)                                                                          |
+| `fakerOptions.seed`   | `number`   | `[]`          | Number for the Faker.js seed (e.g. 1234)                                                                                                                               |
+| `envVarsPrefix`       | `string`   | `MOCKOON_`    | [Environment variables prefix](https://mockoon.com/docs/latest/variables/environment-variables/). Pass an empty string to disable it.                                  |
+| `enableAdminApi`      | `boolean`  | `true`        | Enable (default) or disable the [Admin API](https://mockoon.com/docs/latest/admin-api/overview/).                                                                      |
+| `disableTls`          | `boolean`  | `false`       | Disable TLS. TLS configuration is part of the environment configuration (more info: https://mockoon.com/docs/latest/server-configuration/serving-over-tls/).           |
+| `maxTransactionLogs`  | `number`   | `100`         | Maximum number of transaction logs to keep in memory for retrieval via the admin API (default: 100).                                                                   |
 
 Example:
 
@@ -161,9 +164,17 @@ const mockoonServerless = new mockoon.MockoonServerless(mockEnv, {
     locale: 'en_GB',
     seed: 1234
   },
-  envVarsPrefix: 'CUSTOM_PREFIX_'
+  envVarsPrefix: 'CUSTOM_PREFIX_',
+  enableAdminApi: false,
+  disableTls: true
 });
 ```
+
+#### Admin API
+
+Each running mock API has an admin API enabled by default and available at `/mockoon-admin/`. This API allows you to interact with the running mock API, retrieve logs, and more. You can disable the admin API with the `enableAdminApi` option.
+
+> 💡 To learn more about the admin API, check the [documentation](https://mockoon.com/docs/latest/admin-api/overview/).
 
 #### Faker.js options
 
@@ -226,11 +237,15 @@ const mockoonServerless = new mockoon.MockoonServerless(mockEnv, {
 });
 ```
 
-The `transaction` model can be found [here](https://github.com/mockoon/mockoon/blob/main/packages/commons/src/models/server.model.ts#L33-L53).
+The `transaction` model can be found [here](https://github.com/mockoon/mockoon/blob/main/packages/commons/src/models/server.model.ts#L27-L47).
 
 ## Disabling routes
 
-When using the `disabledRoutes` option, you can disable routes by UUID(s) or keyword(s) in route path. This is the counterpart of the "Toggle route" feature in the desktop application (right-click on a route -> "Toggle route").
+You can disable routes at runtime by providing their UUIDs or a keyword present in the route's path (do not include a leading slash). You can also disable all the routes present in a folder (including subfolders) by adding a keyword present in a folder name.
+
+This is the counterpart of the "Toggle route" feature in the desktop application (right-click on a route -> "Toggle route").
+
+For example, to disable all routes in a folder named `folder1`, and all routes having "users" in their paths, you can provide the following array `['folder1', 'users']`.
 
 ## Serverless package limitations
 
@@ -239,19 +254,43 @@ Due to the stateless nature of cloud functions, some of Mockoon's features will 
 - the [data buckets](https://mockoon.com/docs/latest/data-buckets/overview/) will not be persisting and be regenerated during each call.
 - the [rules](https://mockoon.com/docs/latest/route-responses/dynamic-rules/#1-target) based on the request number will not work as this counter will be reset during each call.
 
+## Mockoon's documentation
+
+You will find Mockoon's [documentation](https://mockoon.com/docs/latest/about/) on the official website.
+
+## Sponsors
+
+Mockoon is an open-source project built by volunteer maintainers. If you like our application, please consider sponsoring us and join all the [Sponsors and Backers](https://github.com/mockoon/mockoon/blob/main/backers.md) who helped this project over time!
+
+<div align="center">
+<a href="https://github.com/sponsors/mockoon"><img src="https://mockoon.com/images/sponsor-btn.png" width="250" alt="sponsor button" /></a>
+</div>
+
+## Subscribe to Mockoon Pro
+
+With advanced features for solo developers and teams, Mockoon Pro supercharges your API development:
+
+- ☁️ [cloud deployments](https://mockoon.com/docs/latest/mockoon-cloud/api-mock-cloud-deployments/)
+- 🔄️ [data synchronization and real-time collaboration](https://mockoon.com/docs/latest/mockoon-cloud/data-synchronization-team-collaboration/)
+- 🤖 [AI powered API mocking](https://mockoon.com/ai-powered-api-mocking/)
+- 📃 Access to dozens of [ready to use JSON templates](https://mockoon.com/templates/).
+- 💬 Priority support and training.
+
+Upgrade today and take your API development to the next level.
+
+<div align="center" style="margin-top:20px;margin-bottom:20px;">
+<a href="https://mockoon.com/pro/"><img src="https://mockoon.com/images/pro-btn.png?" width="250" alt="pro button" /></a>
+</div>
+
 ## Support/feedback
 
-You can discuss all things related to Mockoon, and ask for help, on the [official community](https://github.com/mockoon/mockoon/discussions). It's also a good place to discuss bugs and feature requests before opening an issue on this repository. For more chat-like discussions, you can also join our [Discord server](https://discord.gg/FtJjkejKGp).
+You can discuss all things related to Mockoon's CLI, and ask for help, on the [official community](https://github.com/mockoon/mockoon/discussions). It's also a good place to discuss bugs and feature requests before opening an issue on this repository. For more chat-like discussions, you can also join our [Discord server](https://discord.gg/FtJjkejKGp).
 
 ## Contributing
 
 If you are interested in contributing to Mockoon, please take a look at the [contributing guidelines](https://github.com/mockoon/mockoon/blob/main/CONTRIBUTING.md).
 
 Please also take a look at our [Code of Conduct](https://github.com/mockoon/mockoon/blob/main/CODE_OF_CONDUCT.md).
-
-## Documentation
-
-You will find Mockoon's [documentation](https://mockoon.com/docs/latest) on the official website. It covers Mockoon's most complex features. Feel free to contribute or ask for new topics to be covered.
 
 ## Roadmap
 

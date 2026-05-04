@@ -1,3 +1,4 @@
+import { CORSHeaders } from '../constants/common.constants';
 import {
   CallbackDefault,
   DataBucketDefault,
@@ -195,7 +196,7 @@ export const BuildEnvironment = (
     port: params.port !== undefined ? params.port : EnvironmentDefault.port,
     routes: params.hasDefaultRoute ? [newRoute] : [],
     headers: params.hasDefaultHeader
-      ? [BuildHeader('Content-Type', 'application/json')]
+      ? [BuildHeader('Content-Type', 'application/json'), ...CORSHeaders]
       : [],
     proxyReqHeaders: [BuildHeader()],
     proxyResHeaders: [BuildHeader()],
@@ -211,12 +212,11 @@ export const BuildEnvironment = (
 export const BuildDemoEnvironment = (): Environment => {
   const databucket = BuildDatabucket();
   const newRoutes = [
-    BuildHTTPRoute(),
     { ...BuildCRUDRoute() },
-    BuildHTTPRoute(),
-    BuildHTTPRoute(),
-    BuildHTTPRoute(),
-    BuildHTTPRoute(),
+    BuildHTTPRoute(), // templating
+    BuildHTTPRoute(), // rules
+    BuildHTTPRoute(), // route patterns
+    BuildHTTPRoute(), // guard
     BuildHTTPRoute()
   ];
 
@@ -234,38 +234,20 @@ export const BuildDemoEnvironment = (): Environment => {
     routes: [
       {
         ...newRoutes[0],
-        method: Methods.all,
-        endpoint: '*',
-        documentation: 'Global rules',
-        responseMode: ResponseMode.FALLBACK,
+        endpoint: 'users',
+        documentation:
+          'Endpoint performing CRUD operations on a data bucket (automatically creates GET, POST, PUT, DELETE routes)',
         responses: [
           {
-            ...BuildRouteResponse(),
-            label: "Requires the presence of an 'Authorization' header",
-            body: '{\n  "error": "Unauthorized"\n}',
-            statusCode: 401,
-            rules: [
-              {
-                target: 'header',
-                modifier: 'Authorization',
-                operator: 'null',
-                invert: false,
-                value: ''
-              }
-            ]
+            ...newRoutes[0].responses[0],
+            databucketID: databucket.id,
+            label:
+              'Perform CRUD operations on the "Users" databucket ("Data" tab at the top)'
           }
         ]
       },
       {
         ...newRoutes[1],
-        endpoint: 'users',
-        documentation: 'Endpoint performing CRUD operations on a data bucket',
-        responses: [
-          { ...newRoutes[1].responses[0], databucketID: databucket.id }
-        ]
-      },
-      {
-        ...newRoutes[2],
         method: Methods.get,
         endpoint: 'template',
         documentation:
@@ -280,7 +262,7 @@ export const BuildDemoEnvironment = (): Environment => {
         ]
       },
       {
-        ...newRoutes[3],
+        ...newRoutes[2],
         method: Methods.post,
         endpoint: 'content/:param1',
         documentation: 'Use multiple responses with rules',
@@ -288,7 +270,8 @@ export const BuildDemoEnvironment = (): Environment => {
           {
             ...BuildRouteResponse(),
             label: 'Default response',
-            body: '{\n  "Rules example": "Default response. Served if route param \'param1\' is not present."\n}'
+            body: '{\n  "Rules example": "Default response. Served if route param \'param1\' is not present."\n}',
+            default: true
           },
           {
             ...BuildRouteResponse(),
@@ -322,23 +305,7 @@ export const BuildDemoEnvironment = (): Environment => {
         ]
       },
       {
-        ...newRoutes[4],
-        method: Methods.get,
-        endpoint: 'file/:pageName',
-        documentation:
-          "Serve a file dynamically depending on the path param 'pageName'.",
-        responses: [
-          {
-            ...BuildRouteResponse(),
-            label: 'Templating is also supported in file path',
-            headers: [{ key: 'Content-Type', value: 'text/html' }],
-            body: '',
-            filePath: "./page{{urlParam 'pageName'}}.html"
-          }
-        ]
-      },
-      {
-        ...newRoutes[5],
+        ...newRoutes[3],
         method: Methods.put,
         endpoint: 'path/with/pattern(s)?/*',
         documentation: 'Path supports various patterns',
@@ -351,6 +318,44 @@ export const BuildDemoEnvironment = (): Environment => {
         ]
       },
       {
+        ...newRoutes[4],
+        method: Methods.all,
+        endpoint: 'protected/*',
+        documentation:
+          '"Guard" route protecting all routes starting with /protected/',
+        responseMode: ResponseMode.FALLBACK,
+        responses: [
+          {
+            ...BuildRouteResponse(),
+            label: "Requires the presence of an 'Authorization' header",
+            body: '{\n  "error": "Unauthorized"\n}',
+            statusCode: 401,
+            rules: [
+              {
+                target: 'header',
+                modifier: 'Authorization',
+                operator: 'null',
+                invert: false,
+                value: ''
+              }
+            ]
+          }
+        ]
+      },
+      {
+        ...newRoutes[5],
+        method: Methods.get,
+        endpoint: 'protected/path',
+        documentation: 'Protected route',
+        responses: [
+          {
+            ...BuildRouteResponse(),
+            headers: [{ key: 'Content-Type', value: 'text/plain' }],
+            body: 'You can serve the same responses based on the same rules for all or part of your endpoints by creating global routes using the fallback mode and a wildcard path. \nThis is useful if you want to protect all your endpoints by checking if an Authorization header is present or if you want to verify that all your requests contain a specific property in their body.\nTo learn more: https://mockoon.com/docs/latest/route-responses/global-routes-with-rules/'
+          }
+        ]
+      },
+      {
         ...newRoutes[6],
         method: Methods.get,
         endpoint: 'forward-and-record',
@@ -359,7 +364,7 @@ export const BuildDemoEnvironment = (): Environment => {
           {
             ...BuildRouteResponse(),
             headers: [{ key: 'Content-Type', value: 'text/plain' }],
-            body: "Mockoon can also act as a proxy and forward all entering requests that are not caught by declared routes. \nYou can activate this option in the environment settings ('cog' icon in the upper right corner). \nTo learn more: https://mockoon.com/docs/latest/server-configuration/proxy-mode/\n\nAs always, all entering requests, and responses from the proxied server will be recorded ('clock' icon in the upper right corner).\nTo learn more: https://mockoon.com/docs/latest/logging-and-recording/requests-logging/"
+            body: 'Mockoon can also act as a proxy and forward all entering requests that are not caught by declared routes. \nYou can activate this option in the environment settings ("Settings" tab at the top). \nTo learn more: https://mockoon.com/docs/latest/server-configuration/proxy-mode/\n\nAll entering requests, and responses from the proxied server will be recorded and can be automatically mocked ("Logs" tab at the top).\nTo learn more: https://mockoon.com/docs/latest/logging-and-recording/requests-logging/'
           }
         ]
       }

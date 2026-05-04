@@ -1,3 +1,4 @@
+import { DeployInstance, SyncPresence, User } from '@mockoon/cloud';
 import { Environments } from '@mockoon/commons';
 import {
   CallbackSpecTabNameType,
@@ -9,7 +10,6 @@ import {
   EnvironmentLogs
 } from 'src/renderer/app/models/environment-logs.model';
 import { Toast } from 'src/renderer/app/models/toasts.model';
-import { User } from 'src/renderer/app/models/user.model';
 import { Settings } from 'src/shared/models/settings.model';
 
 export type ViewsNameType =
@@ -35,7 +35,10 @@ export type CallbackSettings = {
 
 export type EnvironmentLogsTabsNameType = 'REQUEST' | 'RESPONSE';
 
-export type TemplatesTabsName = 'LIST' | 'GENERATE';
+export type TemplatesTabsName =
+  | 'LIST'
+  | 'GENERATE_TEMPLATE'
+  | 'GENERATE_ENDPOINT';
 
 export type EnvironmentStatus = {
   running: boolean;
@@ -85,7 +88,15 @@ export type StoreType = {
     databuckets: string;
     templates: string;
     callbacks: string;
+    logs: string;
   };
   user: User;
   callbackSettings: CallbackSettings;
+  sync: {
+    status: boolean;
+    presence: SyncPresence;
+    offlineReason: string | null;
+    alert: string | null;
+  };
+  deployInstances: DeployInstance[];
 };

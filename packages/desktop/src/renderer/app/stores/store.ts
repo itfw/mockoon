@@ -12,7 +12,12 @@ import {
   Observable,
   pipe
 } from 'rxjs';
-import { distinctUntilChanged, map, withLatestFrom } from 'rxjs/operators';
+import {
+  distinctUntilChanged,
+  filter,
+  map,
+  withLatestFrom
+} from 'rxjs/operators';
 import { defaultEditorOptions } from 'src/renderer/app/constants/editor.constants';
 import {
   CallbackSpecTabNameType,
@@ -55,13 +60,21 @@ export class Store {
       routes: '',
       databuckets: '',
       templates: '',
-      callbacks: ''
+      callbacks: '',
+      logs: ''
     },
     user: null,
     callbackSettings: {
       activeTab: 'SPEC',
       activeSpecTab: 'BODY'
-    }
+    },
+    sync: {
+      status: false,
+      presence: null,
+      offlineReason: null,
+      alert: null
+    },
+    deployInstances: []
   });
   /**
    * Emits latest store action
@@ -69,8 +82,9 @@ export class Store {
    * Some actions are forcing a UI refresh, and it's also possible to force a UI refresh manually by emitting a new action with the force property set to true (e.g. environments menu name edit need to update the settings view when it's opened)
    */
   private storeAction$ = new BehaviorSubject<{
-    type: ActionTypes;
+    payload: Actions;
     force: boolean;
+    emit: boolean;
   }>(null);
 
   constructor() {}
@@ -96,10 +110,10 @@ export class Store {
    * Select a filter
    */
   public selectFilter<T extends keyof StoreType['filters']>(
-    filter: T
+    filterText: T
   ): Observable<string> {
     return this.store$.asObservable().pipe(
-      map((store) => store?.filters[filter]),
+      map((store) => store?.filters[filterText]),
       distinctUntilChanged()
     );
   }
@@ -145,6 +159,26 @@ export class Store {
   }
 
   /**
+   * Select active environment log
+   */
+  public selectActiveEnvironmentLog(): Observable<EnvironmentLog> {
+    return this.store$
+      .asObservable()
+      .pipe(
+        map((store) =>
+          store.environmentsLogs[store.activeEnvironmentUUID] &&
+          store.environmentsLogs[store.activeEnvironmentUUID].length > 0
+            ? store.environmentsLogs[store.activeEnvironmentUUID].find(
+                (environmentLog) =>
+                  environmentLog.UUID ===
+                  store.activeEnvironmentLogsUUID[store.activeEnvironmentUUID]
+              )
+            : null
+        )
+      );
+  }
+
+  /**
    * Select active environment logs
    */
   public selectActiveEnvironmentLogs(): Observable<EnvironmentLog[]> {
@@ -152,20 +186,6 @@ export class Store {
       .asObservable()
       .pipe(
         map((store) => store.environmentsLogs[store.activeEnvironmentUUID])
-      );
-  }
-
-  /**
-   * Select active environment log UUID for selected environment
-   */
-  public selectActiveEnvironmentLogUUID(): Observable<string> {
-    return this.store$
-      .asObservable()
-      .pipe(
-        map(
-          (store) =>
-            store.activeEnvironmentLogsUUID[store.activeEnvironmentUUID]
-        )
       );
   }
 
@@ -426,10 +446,20 @@ export class Store {
 
   /**
    * Update the store using the reducer
+   *
+   * @param action
+   * @param force
+   * @param emit - emit the action to the storeAction$ observable
    */
-  public update(action: Actions, force = false) {
-    this.storeAction$.next({ type: action.type, force });
+  public update(action: Actions, force = false, emit = true) {
+    this.storeAction$.next({ payload: action, force, emit });
     this.store$.next(environmentReducer(this.store$.value, action));
+  }
+
+  public getStoreActions() {
+    return this.storeAction$
+      .asObservable()
+      .pipe(filter((action) => action.emit));
   }
 
   /**
@@ -461,7 +491,7 @@ export class Store {
       distinctUntilChanged(
         ([previousObject], [nextObject, nextAction]) =>
           previousObject.uuid === nextObject.uuid &&
-          nextAction.type !== ActionTypes.RELOAD_ENVIRONMENT &&
+          nextAction.payload.type !== ActionTypes.RELOAD_ENVIRONMENT &&
           !nextAction.force
       ),
       map(([object]) => object)

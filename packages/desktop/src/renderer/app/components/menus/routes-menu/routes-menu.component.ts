@@ -2,18 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  HostListener,
   OnDestroy,
   OnInit,
   ViewChild
 } from '@angular/core';
-import {
-  UntypedFormBuilder,
-  UntypedFormControl,
-  UntypedFormGroup
-} from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import {
   Environment,
+  Environments,
   Folder,
   FolderChild,
   ReorderAction,
@@ -21,7 +17,7 @@ import {
   ResponseMode,
   Route
 } from '@mockoon/commons';
-import { Observable, Subject, from, merge } from 'rxjs';
+import { Observable, Subject, merge, of } from 'rxjs';
 import {
   debounceTime,
   distinctUntilChanged,
@@ -31,23 +27,16 @@ import {
   tap,
   withLatestFrom
 } from 'rxjs/operators';
-import {
-  FoldersContextMenu,
-  RoutesContextMenu
-} from 'src/renderer/app/components/context-menu/context-menus';
+import { DropdownMenuComponent } from 'src/renderer/app/components/dropdown-menu/dropdown-menu.component';
 import { MainAPI } from 'src/renderer/app/constants/common.constants';
 import { FocusableInputs } from 'src/renderer/app/enums/ui.enum';
-import { textFilter } from 'src/renderer/app/libs/utils.lib';
-import { ContextMenuEvent } from 'src/renderer/app/models/context-menu.model';
-import { DataSubject } from 'src/renderer/app/models/data.model';
+import { BuildFullPath, textFilter } from 'src/renderer/app/libs/utils.lib';
 import {
   DuplicatedRoutesTypes,
   EnvironmentsStatuses
 } from 'src/renderer/app/models/store.model';
 import { EnvironmentsService } from 'src/renderer/app/services/environments.service';
-import { EventsService } from 'src/renderer/app/services/events.service';
 import { UIService } from 'src/renderer/app/services/ui.service';
-import { updateFilterAction } from 'src/renderer/app/stores/actions';
 import { Store } from 'src/renderer/app/stores/store';
 import { Config } from 'src/renderer/config';
 import { Settings } from 'src/shared/models/settings.model';
@@ -62,6 +51,9 @@ type FullFolder = {
   )[];
 };
 
+type routeDropdownMenuPayload = { parentId: string; routeUuid: string };
+type folderDropdownMenuPayload = { folder: Folder; folderUuid: string };
+
 @Component({
   selector: 'app-routes-menu',
   templateUrl: './routes-menu.component.html',
@@ -71,8 +63,11 @@ type FullFolder = {
 export class RoutesMenuComponent implements OnInit, OnDestroy {
   @ViewChild('routesMenu')
   private routesMenu: ElementRef<HTMLUListElement>;
+
   public settings$: Observable<Settings>;
   public activeEnvironment$: Observable<Environment>;
+  public environments$: Observable<Environments> =
+    this.store.select('environments');
   public rootFolder$: Observable<FullFolder>;
   public activeRoute$: Observable<Route>;
   public environmentsStatus$: Observable<EnvironmentsStatuses>;
@@ -80,45 +75,138 @@ export class RoutesMenuComponent implements OnInit, OnDestroy {
   public disabledRoutes$: Observable<string[]>;
   public collapsedFolders$: Observable<string[]>;
   public routesFilter$: Observable<string>;
-  public routesFilter: UntypedFormControl;
   public dragEnabled = true;
   public focusableInputs = FocusableInputs;
   public folderForm: UntypedFormGroup;
-  public os$: Observable<string>;
   public menuSize = Config.defaultSecondaryMenuSize;
   public draggedFolderCollapsed: boolean;
   public ResponseMode = ResponseMode;
+  public routeDropdownMenuItems: DropdownMenuComponent['items'] = [
+    {
+      label: 'Duplicate',
+      icon: 'content_copy',
+      twoSteps: false,
+      action: ({ parentId, routeUuid }: routeDropdownMenuPayload) => {
+        this.environmentsService.duplicateRoute(parentId, routeUuid);
+      }
+    },
+    {
+      label: 'Duplicate to environment',
+      icon: 'input',
+      twoSteps: false,
+      disabled$: () =>
+        this.environments$.pipe(map((environments) => environments.length < 2)),
+      action: ({ routeUuid }: routeDropdownMenuPayload) => {
+        this.environmentsService.startEntityDuplicationToAnotherEnvironment(
+          routeUuid,
+          'route'
+        );
+      }
+    },
+    {
+      label: 'Copy configuration to clipboard (JSON)',
+      icon: 'assignment',
+      twoSteps: false,
+      action: ({ routeUuid }: routeDropdownMenuPayload) => {
+        this.environmentsService.copyRouteToClipboard(routeUuid);
+      }
+    },
+    {
+      label: 'Copy full path to clipboard',
+      icon: 'assignment',
+      twoSteps: false,
+      action: ({ routeUuid }: routeDropdownMenuPayload) => {
+        const activeEnvironment = this.store.getActiveEnvironment();
+        const route = this.store.getRouteByUUID(routeUuid);
+
+        MainAPI.send(
+          'APP_WRITE_CLIPBOARD',
+          BuildFullPath(activeEnvironment, route)
+        );
+      }
+    },
+    {
+      label: 'Toggle',
+      icon: 'power_settings_new',
+      twoSteps: false,
+      action: ({ routeUuid }: routeDropdownMenuPayload) => {
+        this.environmentsService.toggleRoute(routeUuid);
+      }
+    },
+    {
+      label: 'Delete',
+      icon: 'delete',
+      confirmIcon: 'error',
+      confirmLabel: 'Confirm deletion',
+      twoSteps: true,
+      action: ({ routeUuid }: routeDropdownMenuPayload) => {
+        this.environmentsService.removeRoute(routeUuid);
+      }
+    }
+  ];
+  public folderDropdownMenuItems: DropdownMenuComponent['items'] = [
+    {
+      label: 'Add CRUD route',
+      icon: 'endpoints',
+      twoSteps: false,
+      action: ({ folderUuid }: folderDropdownMenuPayload) => {
+        this.environmentsService.addCRUDRoute(folderUuid);
+      }
+    },
+    {
+      label: 'Add HTTP route',
+      icon: 'endpoint',
+      twoSteps: false,
+      action: ({ folderUuid }: folderDropdownMenuPayload) => {
+        this.environmentsService.addHTTPRoute(folderUuid);
+      }
+    },
+    {
+      label: 'Add folder',
+      icon: 'folder',
+      twoSteps: false,
+      action: ({ folderUuid }: folderDropdownMenuPayload) => {
+        this.environmentsService.addFolder(folderUuid);
+      }
+    },
+    {
+      label: 'Toggle direct child routes',
+      icon: 'power_settings_new',
+      twoSteps: false,
+      action: ({ folderUuid }: folderDropdownMenuPayload) => {
+        this.environmentsService.toggleFolder(folderUuid);
+      }
+    },
+    {
+      label: 'Delete folder',
+      icon: 'delete',
+      twoSteps: true,
+      confirmIcon: 'error',
+      confirmLabel: 'Confirm deletion',
+      disabled$: ({ folder }: folderDropdownMenuPayload) =>
+        of(folder.children.length > 0),
+      disabledLabel: 'Delete folder (not empty)',
+      action: ({ folderUuid }: folderDropdownMenuPayload) => {
+        this.environmentsService.removeFolder(folderUuid);
+      }
+    }
+  ];
   private destroy$ = new Subject<void>();
 
   constructor(
     private environmentsService: EnvironmentsService,
     private store: Store,
-    private eventsService: EventsService,
     private uiService: UIService,
     private formBuilder: UntypedFormBuilder
   ) {}
 
-  @HostListener('keydown', ['$event'])
-  public escapeFilterInput(event: KeyboardEvent) {
-    if (event.key === 'Escape') {
-      this.clearFilter();
-    }
-  }
-
   ngOnInit() {
-    this.os$ = from(MainAPI.invoke('APP_GET_OS'));
-    this.routesFilter = this.formBuilder.control('');
-
     this.activeEnvironment$ = this.store.selectActiveEnvironment();
     this.activeRoute$ = this.store.selectActiveRoute();
     this.duplicatedRoutes$ = this.store.select('duplicatedRoutes');
     this.environmentsStatus$ = this.store.select('environmentsStatus');
     this.settings$ = this.store.select('settings');
-    this.routesFilter$ = this.store.selectFilter('routes').pipe(
-      tap((search) => {
-        this.routesFilter.patchValue(search, { emitEvent: false });
-      })
-    );
+    this.routesFilter$ = this.store.selectFilter('routes');
     this.disabledRoutes$ = this.store.selectActiveEnvironment().pipe(
       withLatestFrom(this.store.select('settings')),
       filter(
@@ -155,22 +243,25 @@ export class RoutesMenuComponent implements OnInit, OnDestroy {
       })
     );
 
-    this.routesFilter.valueChanges
-      .pipe(
-        debounceTime(10),
-        tap((search) =>
-          this.store.update(updateFilterAction('routes', search))
-        ),
-        takeUntil(this.destroy$)
-      )
-      .subscribe();
-
     this.initForms();
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.unsubscribe();
+  }
+
+  /**
+   * check if the route is hidden by the search filter
+   *
+   * @param search
+   * @param route
+   * @returns
+   */
+  public isRouteHidden(search: string, route: Route) {
+    return !`${route.method} ${route.endpoint} ${route.documentation}`
+      .toLowerCase()
+      .includes(search.toLowerCase());
   }
 
   /**
@@ -227,41 +318,6 @@ export class RoutesMenuComponent implements OnInit, OnDestroy {
     this.environmentsService.setActiveRoute(routeUUID);
   }
 
-  /**
-   * Show and position the context menu
-   *
-   * @param event - click event
-   */
-  public openContextMenu(
-    subject: Exclude<DataSubject, 'databucket' | 'environment'>,
-    subjectUUID: string,
-    event: MouseEvent,
-    parentId?: string
-  ) {
-    if (event?.button !== 2) {
-      return;
-    }
-
-    let menu: ContextMenuEvent;
-
-    if (subject === 'folder') {
-      menu = {
-        event,
-        items: FoldersContextMenu(subjectUUID)
-      };
-    } else if (subject === 'route') {
-      menu = {
-        event,
-        items: RoutesContextMenu(
-          subjectUUID,
-          parentId,
-          this.store.get('environments')
-        )
-      };
-    }
-    this.eventsService.contextMenuEvents.next(menu);
-  }
-
   public toggleCollapse(folder: Folder) {
     this.environmentsService.toggleFolderCollapse(folder.uuid);
   }
@@ -283,13 +339,6 @@ export class RoutesMenuComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Clear the filter route
-   */
-  public clearFilter() {
-    this.store.update(updateFilterAction('routes', ''));
-  }
-
-  /**
    * Create an observable that will emit true if the route should be hidden by the search filter
    *
    * @param search
@@ -302,7 +351,7 @@ export class RoutesMenuComponent implements OnInit, OnDestroy {
       map(
         (search) =>
           !textFilter(
-            `${route.method} /${route.endpoint} ${route.documentation}`,
+            `${route.type} ${route.method} /${route.endpoint} ${route.documentation}`,
             search
           )
       )

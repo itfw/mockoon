@@ -141,7 +141,7 @@ export const DataBucketDefault: DataBucket = {
   },
   name: 'New data',
   documentation: '',
-  value: ''
+  value: '[\n]'
 };
 
 const UUIDSchema = Joi.string()
@@ -210,7 +210,8 @@ const RouteResponseRuleSchema = Joi.object<ResponseRule, true>({
       'params',
       'request_number',
       'cookie',
-      'global_var'
+      'global_var',
+      'data_bucket'
     )
     .failover(ResponseRuleDefault.target)
     .required(),

@@ -80,7 +80,7 @@ describe('Environment logs', () => {
           2,
           1
         );
-        await environmentsLogs.assertLogItem('Method: GET', 'request', 2, 2);
+        await environmentsLogs.assertLogItem('Method:  GET', 'request', 2, 2);
         await environmentsLogs.assertLogItem(
           'Caught by route: /prefix/endpoint/:param1',
           'request',
@@ -139,13 +139,13 @@ describe('Environment logs', () => {
           8,
           6
         );
-        await environmentsLogs.assertLogItem(' requestbody ', 'request', 10, 1);
+        await environmentsLogs.assertLogBody('requestbody', 'request');
       });
 
       it('should verify response tab content', async () => {
         await environmentsLogs.switchTab('RESPONSE');
         await environmentsLogs.assertLogItem(
-          'Status: 200 - OK',
+          'Status: 200  OK',
           'response',
           2,
           1
@@ -174,12 +174,7 @@ describe('Environment logs', () => {
           4,
           4
         );
-        await environmentsLogs.assertLogItem(
-          ' responsebody ',
-          'response',
-          6,
-          1
-        );
+        await environmentsLogs.assertLogBody('responsebody', 'response');
       });
     });
 
@@ -201,7 +196,7 @@ describe('Environment logs', () => {
       it('should verify response tab content', async () => {
         await environmentsLogs.switchTab('RESPONSE');
         await environmentsLogs.assertLogItem(
-          'Status: 404 - Not Found',
+          'Status: 404  Not Found',
           'response',
           2,
           1
@@ -273,7 +268,7 @@ describe('Environment logs', () => {
       it('should verify response tab content', async () => {
         await environmentsLogs.switchTab('RESPONSE');
         await environmentsLogs.assertLogItem(
-          'Status: 200 - OK',
+          'Status: 200  OK',
           'response',
           2,
           1
@@ -339,13 +334,8 @@ describe('Environment logs', () => {
     it('should assert presence on log page and verify selected entry', async () => {
       await navigation.switchView('ENV_LOGS');
       await environmentsLogs.assertActiveLogEntry(2);
-      await environmentsLogs.assertLogItem(
-        'Status: 200 - OK',
-        'response',
-        2,
-        1
-      );
-      await environmentsLogs.assertLogItem(' responsebody ', 'response', 6, 1);
+      await environmentsLogs.assertLogItem('Status: 200  OK', 'response', 2, 1);
+      await environmentsLogs.assertLogBody('responsebody', 'response');
     });
   });
 
@@ -377,22 +367,6 @@ describe('Environment logs', () => {
           2,
           1
         );
-      });
-
-      it('should open request body in editor', async () => {
-        await environmentsLogs.clickOpenBodyInEditorButton('request');
-        await browser.pause(100);
-        await modals.assertExists();
-        await modals.close();
-      });
-
-      it('should open response body in editor', async () => {
-        await environmentsLogs.switchTab('RESPONSE');
-
-        await environmentsLogs.clickOpenBodyInEditorButton('response');
-        await browser.pause(100);
-        await modals.assertExists();
-        await modals.close();
       });
 
       it('should clear logs, verify message presence and counter absence', async () => {

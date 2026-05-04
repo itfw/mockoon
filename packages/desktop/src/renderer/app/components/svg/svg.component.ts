@@ -34,9 +34,12 @@ export class SvgComponent {
     | 'list'
     | 'record'
     | 'dots'
+    | 'more_vert'
+    | 'file_open'
     | 'magic'
     | 'spinner'
     | 'account'
+    | 'people'
     | 'endpoint'
     | 'endpoints'
     | 'play_arrow'
@@ -60,7 +63,7 @@ export class SvgComponent {
     | 'web_asset'
     | 'access_time'
     | 'add_box'
-    | 'assignment'
+    | 'assignment' // copy to clipboard
     | 'call_made'
     | 'call_received'
     | 'check'
@@ -81,7 +84,7 @@ export class SvgComponent {
     | 'folder_open'
     | 'folder_move'
     | 'history'
-    | 'https'
+    | 'lock' // https
     | 'info'
     | 'input'
     | 'insert_drive_file'
@@ -93,6 +96,13 @@ export class SvgComponent {
     | 'command_palette'
     | 'chevron_left'
     | 'chevron_right'
+    | 'cloud'
+    | 'cloud_off'
+    | 'cloud_add'
+    | 'cloud_remove'
+    | 'backup' // cloud upload: cloud with arrow pointing up
+    | 'computer'
+    | 'public'
     | string;
 
   constructor() {}

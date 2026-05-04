@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { ErrorHandler, NgModule, SecurityContext } from '@angular/core';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
@@ -22,8 +23,8 @@ import { browserLocalPersistence, connectAuthEmulator } from 'firebase/auth';
 import { MARKED_OPTIONS, MarkdownModule } from 'ngx-markdown';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { BannerComponent } from 'src/renderer/app/components/banner/banner.component';
-import { ContextMenuComponent } from 'src/renderer/app/components/context-menu/context-menu.component';
 import { CustomSelectComponent } from 'src/renderer/app/components/custom-select/custom-select.component';
+import { DropdownMenuComponent } from 'src/renderer/app/components/dropdown-menu/dropdown-menu.component';
 import { EditableElementComponent } from 'src/renderer/app/components/editable-element/editable-element.component';
 import { EditorComponent } from 'src/renderer/app/components/editor/editor.component';
 import { EnvironmentCallbacksComponent } from 'src/renderer/app/components/environment-callbacks/environment-callbacks.component';
@@ -33,6 +34,7 @@ import { EnvironmentLogsComponent } from 'src/renderer/app/components/environmen
 import { EnvironmentProxyComponent } from 'src/renderer/app/components/environment-proxy/environment-proxy.component';
 import { EnvironmentRoutesComponent } from 'src/renderer/app/components/environment-routes/environment-routes.component';
 import { EnvironmentSettingsComponent } from 'src/renderer/app/components/environment-settings/environment-settings.component';
+import { FilterComponent } from 'src/renderer/app/components/filter/filter.component';
 import { FooterComponent } from 'src/renderer/app/components/footer/footer.component';
 import { HeaderComponent } from 'src/renderer/app/components/header/header.component';
 import { HeadersListComponent } from 'src/renderer/app/components/headers-list/headers-list.component';
@@ -44,8 +46,9 @@ import { AuthModalComponent } from 'src/renderer/app/components/modals/auth-moda
 import { ChangelogModalComponent } from 'src/renderer/app/components/modals/changelog-modal/changelog-modal.component';
 import { CommandPaletteModalComponent } from 'src/renderer/app/components/modals/command-palette-modal/command-palette-modal.component';
 import { ConfirmModalComponent } from 'src/renderer/app/components/modals/confirm-modal/confirm-modal.component';
+import { DeployInstanceModalComponent } from 'src/renderer/app/components/modals/deploy-instance-modal/deploy-instance-modal.component';
 import { DuplicateModalComponent } from 'src/renderer/app/components/modals/duplicate-modal/duplicate-modal.component';
-import { EditorModalComponent } from 'src/renderer/app/components/modals/editor-modal/editor-modal.component';
+import { ManageInstancesModalComponent } from 'src/renderer/app/components/modals/manage-instances-modal/manage-instances-modal.component';
 import { SettingsModalComponent } from 'src/renderer/app/components/modals/settings-modal/settings-modal.component';
 import { TemplatesModalComponent } from 'src/renderer/app/components/modals/templates-modal/templates-modal.component';
 import { WelcomeModalComponent } from 'src/renderer/app/components/modals/welcome-modal/welcome-modal.component';
@@ -58,6 +61,7 @@ import { TourComponent } from 'src/renderer/app/components/tour/tour.component';
 import { DraggableDirective } from 'src/renderer/app/directives/draggable.directive';
 import { DropzoneDirective } from 'src/renderer/app/directives/dropzone.directive';
 import { FocusOnEventDirective } from 'src/renderer/app/directives/focus-event.directive';
+import { HideAfterDirective } from 'src/renderer/app/directives/hide-after.directive';
 import { InputNumberDirective } from 'src/renderer/app/directives/input-number.directive';
 import { ResizeColumnDirective } from 'src/renderer/app/directives/resize-column.directive';
 import { ScrollWhenActiveDirective } from 'src/renderer/app/directives/scroll-to-active.directive';
@@ -85,13 +89,12 @@ import { AppComponent } from './app.component';
     DraggableDirective,
     DropzoneDirective,
     ScrollWhenActiveDirective,
-    ContextMenuComponent,
+    HideAfterDirective,
     CommandPaletteModalComponent,
     AuthModalComponent,
     WelcomeModalComponent,
     SettingsModalComponent,
     ChangelogModalComponent,
-    EditorModalComponent,
     ConfirmModalComponent,
     TemplatesModalComponent,
     EnvironmentLogsComponent,
@@ -117,7 +120,11 @@ import { AppComponent } from './app.component';
     ToggleComponent,
     SvgComponent,
     EditableElementComponent,
-    TourComponent
+    TourComponent,
+    FilterComponent,
+    DropdownMenuComponent,
+    DeployInstanceModalComponent,
+    ManageInstancesModalComponent
   ],
   imports: [
     BrowserAnimationsModule,
@@ -159,6 +166,7 @@ import { AppComponent } from './app.component';
     NgxMaskDirective
   ],
   providers: [
+    DatePipe,
     {
       provide: ErrorHandler,
       useClass: GlobalErrorHandler

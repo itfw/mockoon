@@ -1,22 +1,17 @@
 import { resolve } from 'path';
-import contextMenu, {
-  ContextMenuEnvironmentActions
-} from '../libs/context-menu';
 import dialogs from '../libs/dialogs';
-import utils from '../libs/utils';
+import utils, { DropdownMenuEnvironmentActions } from '../libs/utils';
 
 class Environments {
   private activeMenuEntrySelector =
     '.environments-menu .nav-item .nav-link.active';
 
-  public get openBtn() {
-    return $(
-      '.environments-menu .nav:first-of-type .nav-item .nav-link.open-environment'
-    );
-  }
-
   public get recordingIndicator() {
     return $(`${this.activeMenuEntrySelector} app-svg[icon="record"]`);
+  }
+
+  public get addBtn() {
+    return $('#environments-add-dropdown .dropdown-toggle');
   }
 
   private get startBtn() {
@@ -37,18 +32,28 @@ class Environments {
     );
   }
 
-  private get environmentMenuEntry() {
-    return $(this.activeMenuEntrySelector);
-  }
-
   private get activeEnvironmentMenuEntry() {
     return $(this.activeMenuEntrySelector);
   }
 
-  public async add() {
-    await $(
-      '.environments-menu .nav:first-of-type .nav-item .nav-link.add-environment'
-    ).click();
+  public getAddMenuEntry(index: number) {
+    return $(
+      `#environments-add-dropdown-menu .dropdown-item:nth-child(${index})`
+    );
+  }
+
+  public async add(environmentName: string) {
+    await dialogs.save(resolve(`./tmp/storage/${environmentName}.json`));
+    await this.addBtn.click();
+    await this.getAddMenuEntry(1).click();
+    await utils.closeTooltip();
+  }
+
+  /**
+   * Open the environment add menu
+   */
+  public async openAddMenu(): Promise<void> {
+    await this.addBtn.click();
   }
 
   /**
@@ -59,13 +64,18 @@ class Environments {
     assertActive = true
   ): Promise<void> {
     await dialogs.open(resolve(`./tmp/storage/${environmentName}.json`));
-    await this.openBtn.click();
+
+    await this.addBtn.click();
+    await this.getAddMenuEntry(2).click();
+
     await utils.closeTooltip();
 
     if (assertActive) {
       const activeEnvironment = await this.activeEnvironmentMenuEntry;
       await activeEnvironment.waitForExist();
     }
+
+    await browser.pause(100);
   }
 
   public async select(environmentIndex: number): Promise<void> {
@@ -75,19 +85,18 @@ class Environments {
   }
 
   public async close(index: number): Promise<void> {
-    await contextMenu.click(
-      'environments',
-      index,
-      ContextMenuEnvironmentActions.CLOSE
+    await utils.dropdownMenuClick(
+      `.environments-menu div:first-of-type .nav-item:nth-child(${index}) .nav-link`,
+      DropdownMenuEnvironmentActions.CLOSE
     );
+
     await browser.pause(500);
   }
 
   public async duplicate(index: number) {
-    await contextMenu.click(
-      'environments',
-      index,
-      ContextMenuEnvironmentActions.DUPLICATE
+    await utils.dropdownMenuClick(
+      `.environments-menu div:first-of-type .nav-item:nth-child(${index}) .nav-link`,
+      DropdownMenuEnvironmentActions.DUPLICATE
     );
   }
 
@@ -136,29 +145,29 @@ class Environments {
   public async assertMenuHTTPSIconPresent(reverse = false): Promise<void> {
     expect(
       await $(
-        `${this.activeMenuEntrySelector} .nav-link-subtitle app-svg[icon="https"]`
+        `${this.activeMenuEntrySelector} .nav-link-subtitle app-svg[icon="lock"]`
       ).isExisting()
     ).toEqual(reverse ? false : true);
   }
 
   public async assertMenuProxyIconVisible(reverse = false): Promise<void> {
-    expect(
+    const condition = expect(
       await $(
-        `${this.activeMenuEntrySelector} app-svg[icon="security"]${
-          reverse ? '.invisible' : '.visible'
-        }`
+        `${this.activeMenuEntrySelector} app-svg[icon="security"]`
       ).isExisting()
-    ).toEqual(true);
+    );
+
+    condition.toEqual(reverse ? false : true);
   }
 
   public async assertMenuRecordingIconVisible(reverse = false): Promise<void> {
-    expect(
+    const condition = expect(
       await $(
-        `${this.activeMenuEntrySelector} app-svg[icon="record"]${
-          reverse ? '.invisible' : '.visible'
-        }`
+        `${this.activeMenuEntrySelector} app-svg[icon="record"]`
       ).isExisting()
-    ).toEqual(true);
+    );
+
+    condition.toEqual(reverse ? false : true);
   }
 
   public async assertNeedsRestart() {

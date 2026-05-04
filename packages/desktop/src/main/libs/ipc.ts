@@ -1,5 +1,6 @@
 import { Environment, Environments } from '@mockoon/commons';
 import { OpenAPIConverter } from '@mockoon/commons-server';
+import { createHash } from 'crypto';
 import {
   BrowserWindow,
   Menu,
@@ -15,17 +16,15 @@ import { lookup as mimeTypeLookup } from 'mime-types';
 import {
   format as pathFormat,
   join as pathJoin,
-  parse as pathParse
+  parse as pathParse,
+  resolve as pathResolve
 } from 'path';
 import {
   IPCMainHandlerChannels,
   IPCMainListenerChannels
 } from 'src/main/constants/ipc.constants';
 import { logError, logInfo } from 'src/main/libs/logs';
-import {
-  toggleEnvironmentMenuItems,
-  toggleRouteMenuItems
-} from 'src/main/libs/menu';
+import { updateMenuState } from 'src/main/libs/menu';
 import { showFolderInExplorer } from 'src/main/libs/paths';
 import { ServerInstance } from 'src/main/libs/server-management';
 import {
@@ -45,7 +44,11 @@ import {
   handleZoomOut,
   handleZoomReset
 } from 'src/main/libs/zoom';
-import { Settings } from 'src/shared/models/settings.model';
+import { MenuStateUpdatePayload } from 'src/shared/models/ipc.model';
+import {
+  EnvironmentDescriptor,
+  Settings
+} from 'src/shared/models/settings.model';
 
 declare const IS_TESTING: boolean;
 
@@ -66,6 +69,24 @@ const getDialogDefaultPath = () => {
   return getDataPath();
 };
 
+/**
+ * Build a full file path by combining an environment path to which a file is reletively located and a file path
+ *
+ * @param filePath
+ * @param relativeToFile
+ * @returns
+ */
+const buildFilePath = (filePath: string, relativeToFile: string): string => {
+  let relativeDir = '';
+
+  // if a relative path (mostly a path to an env data file) is provided, extract the directory
+  if (relativeToFile) {
+    relativeDir = pathParse(relativeToFile).dir;
+  }
+
+  return pathResolve(relativeDir, filePath);
+};
+
 export const initIPCListeners = (mainWindow: BrowserWindow) => {
   // Quit requested by renderer (when waiting for save to finish)
   ipcMain.on('APP_QUIT', () => {
@@ -77,21 +98,12 @@ export const initIPCListeners = (mainWindow: BrowserWindow) => {
     mainWindow.hide();
   });
 
-  ipcMain.on('APP_DISABLE_ENVIRONMENT_MENU_ENTRIES', () => {
-    toggleEnvironmentMenuItems(false);
-  });
-
-  ipcMain.on('APP_ENABLE_ENVIRONMENT_MENU_ENTRIES', () => {
-    toggleEnvironmentMenuItems(true);
-  });
-
-  ipcMain.on('APP_DISABLE_ROUTE_MENU_ENTRIES', () => {
-    toggleRouteMenuItems(false);
-  });
-
-  ipcMain.on('APP_ENABLE_ROUTE_MENU_ENTRIES', () => {
-    toggleRouteMenuItems(true);
-  });
+  ipcMain.on(
+    'APP_UPDATE_MENU_STATE',
+    (event, state: MenuStateUpdatePayload) => {
+      updateMenuState(state);
+    }
+  );
 
   ipcMain.on('APP_LOGS', (event, data) => {
     if (data.type === 'info') {
@@ -101,8 +113,8 @@ export const initIPCListeners = (mainWindow: BrowserWindow) => {
     }
   });
 
-  ipcMain.on('APP_SHOW_FILE', (event, path) => {
-    shell.showItemInFolder(path);
+  ipcMain.on('APP_SHOW_FILE', (event, filePath, relativeToFile) => {
+    shell.showItemInFolder(buildFilePath(filePath, relativeToFile));
   });
 
   ipcMain.on('APP_SHOW_FOLDER', (event, name) => {
@@ -154,12 +166,21 @@ export const initIPCListeners = (mainWindow: BrowserWindow) => {
 
   ipcMain.handle(
     'APP_WRITE_ENVIRONMENT_DATA',
-    async (event, data, path: string, storagePrettyPrint?: boolean) => {
-      unwatchEnvironmentFile(data.uuid);
+    async (
+      event,
+      data,
+      descriptor: EnvironmentDescriptor,
+      storagePrettyPrint?: boolean
+    ) => {
+      if (!descriptor.cloud) {
+        unwatchEnvironmentFile(data.uuid);
+      }
 
-      await writeJSONData(data, path, storagePrettyPrint);
+      await writeJSONData(data, descriptor.path, storagePrettyPrint);
 
-      watchEnvironmentFile(data.uuid, path);
+      if (!descriptor.cloud) {
+        watchEnvironmentFile(data.uuid, descriptor.path);
+      }
     }
   );
 
@@ -239,6 +260,10 @@ export const initIPCListeners = (mainWindow: BrowserWindow) => {
     return parsedPath.name;
   });
 
+  ipcMain.handle('APP_GET_HASH', (event, str) =>
+    createHash('sha1').update(str, 'utf-8').digest('hex')
+  );
+
   ipcMain.handle(
     'APP_OPENAPI_CONVERT_FROM',
     async (event, filePath: string, port?: number) => {
@@ -264,6 +289,19 @@ export const initIPCListeners = (mainWindow: BrowserWindow) => {
   ipcMain.handle('APP_STOP_SERVER', (event, environmentUUID: string) => {
     ServerInstance.stop(environmentUUID);
   });
+
+  ipcMain.on(
+    'APP_OPEN_FILE',
+    async (event, filePath: string, relativeToFile: string) => {
+      const result = await shell.openPath(
+        buildFilePath(filePath, relativeToFile)
+      );
+
+      if (result) {
+        logError(`Failed to open file in default editor: ${result}`);
+      }
+    }
+  );
 };
 
 /**

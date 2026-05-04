@@ -1,3 +1,4 @@
+import { ParsedJSONBodyMimeTypes } from '../constants/common.constants';
 import { Environment } from '../models/environment.model';
 import { Header, RouteResponse } from '../models/route.model';
 
@@ -183,3 +184,50 @@ export const RandomInt = (a = 1, b = 0) => {
 
 export const randomArrayItem = <T>(array: T[]) =>
   array[RandomInt(0, array.length - 1)];
+
+/**
+ * Returns a deterministic stringified version of an object
+ *
+ * @param obj
+ * @returns
+ */
+export const deterministicStringify = (obj: any) =>
+  JSON.stringify(obj, (_key, value) =>
+    value instanceof Object && !(value instanceof Array)
+      ? Object.keys(value)
+          .sort()
+          .reduce((sorted, key) => {
+            sorted[key] = value[key];
+
+            return sorted;
+          }, {})
+      : value
+  );
+
+/**
+ * Check that at least one item of the array is included in the provided string
+ *
+ * @param array
+ * @param str
+ * @returns
+ */
+export const stringIncludesArrayItems = (
+  array: (string | RegExp)[],
+  str: string
+): boolean =>
+  array.some((item) =>
+    item instanceof RegExp ? item.test(str) : str.includes(item)
+  );
+
+/**
+ * Verify if the request content type is application/json
+ *
+ * @param headers
+ */
+export const isContentTypeApplicationJson = (headers: Header[]) => {
+  const contentType = GetContentType(headers)?.toLowerCase();
+
+  return contentType
+    ? stringIncludesArrayItems(ParsedJSONBodyMimeTypes, contentType)
+    : false;
+};

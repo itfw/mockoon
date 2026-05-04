@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { Environment, EnvironmentDefault } from '@mockoon/commons';
-import { merge, Observable, Subject } from 'rxjs';
+import { Observable, Subject, merge } from 'rxjs';
 import { filter, map, takeUntil, tap } from 'rxjs/operators';
 import { ToggleItems } from 'src/renderer/app/models/common.model';
 import { DialogsService } from 'src/renderer/app/services/dialogs.service';
@@ -61,11 +61,11 @@ export class EnvironmentSettingsComponent implements OnInit, OnDestroy {
     this.dialogsService
       .showOpenDialog('Choose a file', null, false)
       .pipe(
-        tap((filePath) => {
-          if (filePath) {
+        tap((filePaths) => {
+          if (filePaths[0]) {
             this.activeEnvironmentForm
               .get(['tlsOptions', target])
-              .setValue(filePath);
+              .setValue(filePaths[0]);
           }
         })
       )

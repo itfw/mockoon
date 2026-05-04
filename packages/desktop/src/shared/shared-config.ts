@@ -1,3 +1,5 @@
+import { defaultMaxTransactionLogs } from '@mockoon/commons';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const appVersion: string = require('../../package.json').version;
 
@@ -33,14 +35,16 @@ export const SharedConfig = (options: {
       headers: docsURL + 'response-configuration/response-headers/',
       rules: docsURL + 'route-responses/multiple-responses/',
       hostname: docsURL + 'server-configuration/listening-hostname/',
-      faq: options.websiteURL + 'faq/'
+      faq: options.websiteURL + 'faq/',
+      cloudSync:
+        docsURL + 'mockoon-cloud/data-synchronization-team-collaboration/'
     },
     loginURL: `${options.websiteURL}login/?inapp=true`,
     signupURL: `${options.websiteURL}signup/?inapp=true`,
     accountURL: `${options.websiteURL}account/subscription/`,
     proPlansURL: `${options.websiteURL}pro/`,
-    maxTemplatePromptLength: 500,
-    defaultMaxLogsPerEnvironment: 50,
+    maxPromptLength: 500,
+    defaultMaxLogsPerEnvironment: defaultMaxTransactionLogs,
     defaultMainMenuSize: 100,
     defaultSecondaryMenuSize: 200,
     storageSaveDelay: 1000, // ms
