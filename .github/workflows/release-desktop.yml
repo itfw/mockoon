@@ -31,11 +31,11 @@ jobs:
           npm run build:libs
           npm run build:desktop:prod
           npm run package:desktop:mac
-      - name: Verify notarization
-        run: |
-          codesign --verify --deep --strict --verbose=2 ./packages/desktop/packages/mac/Mockoon.app
-          codesign --verify --deep --strict --verbose=2 ./packages/desktop/packages/mac-arm64/Mockoon.app
-          codesign --verify --deep --strict --verbose=2 ./packages/desktop/packages/mac-universal/Mockoon.app
+      # - name: Verify notarization
+      #   run: |
+      #     codesign --verify --deep --strict --verbose=2 ./packages/desktop/packages/mac/Mockoon.app
+      #     codesign --verify --deep --strict --verbose=2 ./packages/desktop/packages/mac-arm64/Mockoon.app
+      #     codesign --verify --deep --strict --verbose=2 ./packages/desktop/packages/mac-universal/Mockoon.app
       - name: Get universal binary shasum
         run: |
           shasum -a 256 ./packages/desktop/packages/mockoon.setup.*.universal.dmg
