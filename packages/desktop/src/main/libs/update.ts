@@ -28,86 +28,86 @@ const notifyUpdate = (mainWindow: BrowserWindow, version: string) => {
 };
 
 export const checkForUpdate = async (mainWindow: BrowserWindow) => {
-  const userDataPath = app.getPath('userData');
-  let releaseResponse: { tag: string };
+  return;
+ //  const userDataPath = app.getPath('userData');
+ //  let releaseResponse: { tag: string };
 
-  try {
-    // try to remove existing old update
-    await fsPromises.unlink(
-      pathJoin(userDataPath, `mockoon.setup.${Config.appVersion}.exe`)
-    );
-    logInfo('[MAIN][UPDATE] Removed old update file');
-  } catch (error) {
-    /* empty */
-  }
+ //  try {
+ //    // try to remove existing old update
+ //    await fsPromises.unlink(
+ //      pathJoin(userDataPath, `mockoon.setup.${Config.appVersion}.exe`)
+ //    );
+ //    logInfo('[MAIN][UPDATE] Removed old update file');
+ //  } catch (error) {
+ //    /* empty */
+ //  }
 
-  try {
-    releaseResponse = await (
-      await fetch(Config.latestReleaseDataURL, {
-        headers: new Headers({
-          pragma: 'no-cache',
-          'cache-control': 'no-cache'
-        })
-      })
-    ).json();
-  } catch (error: any) {
-    logInfo(`[MAIN][UPDATE] Error while checking for update: ${error.message}`);
+ //  try {
+ //    releaseResponse = await (
+ //      await fetch(Config.latestReleaseDataURL, {
+ //        headers: new Headers({
+ //          pragma: 'no-cache',
+ //          'cache-control': 'no-cache'
+ //        })
+ //      })
+ //    ).json();
+ //  } catch (error: any) {
+ //    logInfo(`[MAIN][UPDATE] Error while checking for update: ${error.message}`);
 
-    return;
-  }
+ //    return;
+ //  }
 
-  const latestVersion = releaseResponse.tag;
+ //  const latestVersion = releaseResponse.tag;
 
-  if (semverGt(latestVersion, Config.appVersion)) {
-    logInfo(`[MAIN][UPDATE] Found a new version v${latestVersion}`);
+//   if (semverGt(latestVersion, Config.appVersion)) {
+//     logInfo(`[MAIN][UPDATE] Found a new version v${latestVersion}`);
 
-    if (process.platform === 'win32' && isNotPortable) {
-      const binaryFilename = `mockoon.setup.${latestVersion}.exe`;
-      const updateFilePath = pathJoin(userDataPath, binaryFilename);
+//       const binaryFilename = `mockoon.setup.${latestVersion}.exe`;
+//       const updateFilePath = pathJoin(userDataPath, binaryFilename);
 
-      try {
-        await fsPromises.access(updateFilePath);
-        logInfo('[MAIN][UPDATE] Binary file already downloaded');
-        notifyUpdate(mainWindow, latestVersion);
-        updateAvailableVersion = latestVersion;
+//       try {
+//         await fsPromises.access(updateFilePath);
+//         logInfo('[MAIN][UPDATE] Binary file already downloaded');
+//         notifyUpdate(mainWindow, latestVersion);
+//         updateAvailableVersion = latestVersion;
 
-        return;
-      } catch (error) {
-        /* empty */
-      }
+//         return;
+//       } catch (error) {
+//         /* empty */
+//       }
 
-      logInfo('[MAIN][UPDATE] Downloading binary file');
+//       logInfo('[MAIN][UPDATE] Downloading binary file');
 
-      try {
-        const response = await fetch(
-          `${Config.githubBinaryURL}v${latestVersion}/${binaryFilename}`
-        );
+//       try {
+//         const response = await fetch(
+//           `${Config.githubBinaryURL}v${latestVersion}/${binaryFilename}`
+//         );
 
-        if (!response.ok) {
-          throw new Error(response.statusText);
-        }
+//         if (!response.ok) {
+//           throw new Error(response.statusText);
+//         }
 
-        await finished(
-          Readable.fromWeb(response.body as ReadableStream<any>).pipe(
-            createWriteStream(updateFilePath)
-          )
-        );
+//         await finished(
+//           Readable.fromWeb(response.body as ReadableStream<any>).pipe(
+//             createWriteStream(updateFilePath)
+//           )
+//         );
 
-        logInfo('[MAIN][UPDATE] Binary file ready');
-        notifyUpdate(mainWindow, latestVersion);
-        updateAvailableVersion = latestVersion;
-      } catch (error: any) {
-        logError(
-          `[MAIN][UPDATE] Error while downloading the binary: ${error.message}`
-        );
-      }
-    } else {
-      notifyUpdate(mainWindow, latestVersion);
-      updateAvailableVersion = latestVersion;
-    }
-  } else {
-    logInfo('[MAIN][UPDATE] Application is up to date');
-  }
+//         logInfo('[MAIN][UPDATE] Binary file ready');
+//         notifyUpdate(mainWindow, latestVersion);
+//         updateAvailableVersion = latestVersion;
+//       } catch (error: any) {
+//         logError(
+//           `[MAIN][UPDATE] Error while downloading the binary: ${error.message}`
+//         );
+//       }
+//     } else {
+//       notifyUpdate(mainWindow, latestVersion);
+//       updateAvailableVersion = latestVersion;
+//     }
+//   } else {
+//     logInfo('[MAIN][UPDATE] Application is up to date');
+//   }
 };
 
 export const applyUpdate = () => {

@@ -152,6 +152,7 @@ The `MockoonServerless` class accepts an optional `options` object as a second p
 | `enableAdminApi`      | `boolean`  | `true`        | Enable (default) or disable the [Admin API](https://mockoon.com/docs/latest/admin-api/overview/).                                                                      |
 | `disableTls`          | `boolean`  | `false`       | Disable TLS. TLS configuration is part of the environment configuration (more info: https://mockoon.com/docs/latest/server-configuration/serving-over-tls/).           |
 | `maxTransactionLogs`  | `number`   | `100`         | Maximum number of transaction logs to keep in memory for retrieval via the admin API (default: 100).                                                                   |
+| `enableRandomLatency` | `boolean`  | `false`       | Randomize global and responses latencies between 0 and the specified value (default: false).                                                                           |
 
 Example:
 
@@ -166,7 +167,8 @@ const mockoonServerless = new mockoon.MockoonServerless(mockEnv, {
   },
   envVarsPrefix: 'CUSTOM_PREFIX_',
   enableAdminApi: false,
-  disableTls: true
+  disableTls: true,
+  enableRandomLatency: false
 });
 ```
 
@@ -266,20 +268,20 @@ Mockoon is an open-source project built by volunteer maintainers. If you like ou
 <a href="https://github.com/sponsors/mockoon"><img src="https://mockoon.com/images/sponsor-btn.png" width="250" alt="sponsor button" /></a>
 </div>
 
-## Subscribe to Mockoon Pro
+## Subscribe to Mockoon Cloud
 
-With advanced features for solo developers and teams, Mockoon Pro supercharges your API development:
+With advanced features for solo developers and teams, Mockoon Cloud supercharges your API development:
 
 - ☁️ [cloud deployments](https://mockoon.com/docs/latest/mockoon-cloud/api-mock-cloud-deployments/)
 - 🔄️ [data synchronization and real-time collaboration](https://mockoon.com/docs/latest/mockoon-cloud/data-synchronization-team-collaboration/)
 - 🤖 [AI powered API mocking](https://mockoon.com/ai-powered-api-mocking/)
-- 📃 Access to dozens of [ready to use JSON templates](https://mockoon.com/templates/).
+- 📃 Access to dozens of [ready-to-use JSON templates](https://mockoon.com/templates/).
 - 💬 Priority support and training.
 
 Upgrade today and take your API development to the next level.
 
 <div align="center" style="margin-top:20px;margin-bottom:20px;">
-<a href="https://mockoon.com/pro/"><img src="https://mockoon.com/images/pro-btn.png?" width="250" alt="pro button" /></a>
+<a href="https://mockoon.com/cloud/"><img src="https://mockoon.com/images/cloud-btn.png?" width="250" alt="cloud button" /></a>
 </div>
 
 ## Support/feedback
