@@ -3,13 +3,14 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  env:
-    CSC_IDENTITY_AUTO_DISCOVERY: false  # 禁用签名
-    USE_HARD_LINKS: false
+  
   lint:
     name: Lint and format
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: false  # 禁用签名
+      USE_HARD_LINKS: false
 
     steps:
       - uses: actions/checkout@v4
@@ -58,6 +59,9 @@ jobs:
         with:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Set npm mirror
+        run: npm config set registry https://registry.npmmirror.com
       - name: Install dependencies
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: |
