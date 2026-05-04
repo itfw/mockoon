@@ -10,19 +10,14 @@ jobs:
     timeout-minutes: 60
 
     env:
-      APPLEID: ${{secrets.APPLEID}}
-      TEAMID: ${{secrets.TEAMID}}
-      APPLEIDPASS: ${{secrets.APPLEIDPASS}}
-      ASCPROVIDER: ${{secrets.ASCPROVIDER}}
-      CSC_LINK: ${{secrets.MACOS_CSC_LINK}}
-      CSC_KEY_PASSWORD: ${{secrets.MACOS_CSC_KEY_PASSWORD}}
+      CSC_IDENTITY_AUTO_DISCOVERY: false
       USE_HARD_LINKS: false
 
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "18.x"
+          node-version: "20.x"
       - name: Update NPM
         run: |
           npm install -g npm@latest

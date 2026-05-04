@@ -3,6 +3,9 @@ name: CI
 on: [push, pull_request]
 
 jobs:
+  env:
+    CSC_IDENTITY_AUTO_DISCOVERY: false  # 禁用签名
+    USE_HARD_LINKS: false
   lint:
     name: Lint and format
     runs-on: ubuntu-latest
@@ -213,7 +216,7 @@ jobs:
           npm run build:desktop:ci
           npm run package:desktop:test:mac
 
-          
+
 #  test-desktop-packaged-linux:
 #    name: Desktop packaged Linux - Build and test
 #    runs-on: ubuntu-latest
