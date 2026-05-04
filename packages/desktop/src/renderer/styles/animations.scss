@@ -1,0 +1,19 @@
+.animation-flash {
+  opacity: 1;
+  animation: flash 1s linear infinite;
+}
+
+@keyframes flash {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    box-shadow: inset -4px 0 0 0 rgba($blue, 0);
+  }
+  to {
+    box-shadow: inset -4px 0 0 0 rgba($blue, 0.8);
+  }
+}
